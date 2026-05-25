@@ -68,6 +68,14 @@ public class SubscriptionService {
         subscriptionRepository.delete(findOwnedOrThrow(id, user));
     }
 
+    Subscription getSubscriptionEntity(Long id, User user) {
+        return findOwnedOrThrow(id, user);
+    }
+
+    List<Subscription> getActiveSubscriptionEntities(User user) {
+        return subscriptionRepository.findByUserIdAndIsActiveTrue(user.getId());
+    }
+
     private Subscription findOwnedOrThrow(Long id, User user) {
         Subscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found: " + id));

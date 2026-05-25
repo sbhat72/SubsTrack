@@ -1,8 +1,10 @@
 package com.substrack.controller;
 
+import com.substrack.dto.CancellationResponse;
 import com.substrack.dto.SubscriptionRequest;
 import com.substrack.dto.SubscriptionResponse;
 import com.substrack.model.User;
+import com.substrack.service.CancellationService;
 import com.substrack.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -26,6 +29,25 @@ import java.util.List;
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
+    private final CancellationService cancellationService;
+
+    @GetMapping("/cancellation-deadlines")
+    ResponseEntity<List<CancellationResponse>> getAllCancellationDeadlines(@AuthenticationPrincipal User user) {
+        List<CancellationResponse> deadlines = subscriptionService.getActiveSubscriptionEntities(user).stream()
+                .map(cancellationService::buildResponse)
+                .sorted(Comparator.comparing(CancellationResponse::getCancellationDeadline))
+                .toList();
+        return ResponseEntity.ok(deadlines);
+    }
+
+    @GetMapping("/{id}/cancellation-deadline")
+    ResponseEntity<CancellationResponse> getCancellationDeadline(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(
+                cancellationService.buildResponse(subscriptionService.getSubscriptionEntity(id, user))
+        );
+    }
 
     @GetMapping
     ResponseEntity<List<SubscriptionResponse>> getAll(@AuthenticationPrincipal User user) {
