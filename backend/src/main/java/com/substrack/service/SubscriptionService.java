@@ -8,6 +8,7 @@ import com.substrack.model.User;
 import com.substrack.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
+    private final PriceCreepService priceCreepService;
 
     public SubscriptionResponse create(SubscriptionRequest request, User user) {
         Subscription subscription = Subscription.builder()
@@ -44,8 +46,11 @@ public class SubscriptionService {
         return SubscriptionResponse.from(findOwnedOrThrow(id, user));
     }
 
+    @Transactional
     public SubscriptionResponse update(Long id, SubscriptionRequest request, User user) {
         Subscription subscription = findOwnedOrThrow(id, user);
+
+        priceCreepService.checkAndRecordPriceChange(subscription, request.getAmount());
 
         subscription.setName(request.getName());
         subscription.setDescription(request.getDescription());
@@ -68,11 +73,11 @@ public class SubscriptionService {
         subscriptionRepository.delete(findOwnedOrThrow(id, user));
     }
 
-    Subscription getSubscriptionEntity(Long id, User user) {
+    public Subscription getSubscriptionEntity(Long id, User user) {
         return findOwnedOrThrow(id, user);
     }
 
-    List<Subscription> getActiveSubscriptionEntities(User user) {
+    public List<Subscription> getActiveSubscriptionEntities(User user) {
         return subscriptionRepository.findByUserIdAndIsActiveTrue(user.getId());
     }
 
