@@ -57,45 +57,73 @@ export interface AuthResponse {
 
 export interface Subscription {
   id: number;
+  userId: number;
+  name: string;
+  description?: string;
+  amount: number;
+  currency: string;
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  nextBillingDate: string;
+  cancellationDate?: string;
+  isActive: boolean;
+  category?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionRequest {
   name: string;
   amount: number;
   billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
   nextBillingDate: string;
-  category: string;
-  active: boolean;
+  currency?: string;
+  cancellationDate?: string;
+  isActive?: boolean;
+  category?: string;
+  description?: string;
 }
 
 export interface CancellationDeadline {
   subscriptionId: number;
   subscriptionName: string;
-  lastCancelDate: string;
   nextBillingDate: string;
-  daysRemaining: number;
-}
-
-export interface ForecastLineItem {
-  name: string;
+  cancellationDeadline: string;
+  daysUntilDeadline: number;
+  isDeadlinePassed: boolean;
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
   amount: number;
 }
 
+export interface ForecastLineItem {
+  subscriptionId: number;
+  subscriptionName: string;
+  amount: number;
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingDate: string;
+}
+
 export interface ForecastEntry {
-  month: number;
+  month: string;
+  monthNumber: number;
   year: number;
   totalAmount: number;
-  lineItems: ForecastLineItem[];
+  subscriptions: ForecastLineItem[];
 }
 
 export interface ForecastResponse {
   generatedAt: string;
-  totals: { annual: number; monthly: number };
+  totalTwelveMonths: number;
+  averageMonthly: number;
   entries: ForecastEntry[];
 }
 
 export interface Notification {
   id: number;
+  subscriptionId?: number;
+  subscriptionName?: string;
+  type: 'PRICE_INCREASE' | 'CANCELLATION_REMINDER' | 'RENEWAL_UPCOMING';
   message: string;
-  type: string;
-  read: boolean;
+  isRead: boolean;
   createdAt: string;
 }
 
@@ -119,8 +147,26 @@ export async function getSubscriptions(): Promise<Subscription[]> {
   return request<Subscription[]>('/api/subscriptions');
 }
 
+export async function createSubscription(data: SubscriptionRequest): Promise<Subscription> {
+  return request<Subscription>('/api/subscriptions', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateSubscription(id: number, data: SubscriptionRequest): Promise<Subscription> {
+  return request<Subscription>(`/api/subscriptions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSubscription(id: number): Promise<void> {
+  return request<void>(`/api/subscriptions/${id}`, { method: 'DELETE' });
+}
+
 export async function getCancellationDeadlines(): Promise<CancellationDeadline[]> {
-  return request<CancellationDeadline[]>('/api/subscriptions/cancellation-date');
+  return request<CancellationDeadline[]>('/api/subscriptions/cancellation-deadlines');
 }
 
 export async function getForecast(): Promise<ForecastResponse> {
@@ -131,6 +177,10 @@ export async function getNotifications(): Promise<Notification[]> {
   return request<Notification[]>('/api/notifications');
 }
 
-export async function getUnreadCount(): Promise<number> {
-  return request<number>('/api/notifications/unread-count');
+export async function getUnreadCount(): Promise<{ count: number }> {
+  return request<{ count: number }>('/api/notifications/unread-count');
+}
+
+export async function markNotificationRead(id: number): Promise<Notification> {
+  return request<Notification>(`/api/notifications/${id}/read`, { method: 'PUT' });
 }
