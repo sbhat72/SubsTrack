@@ -87,7 +87,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await register({ fullName, email, password });
-      authLogin(res.token, res.user);
+      authLogin(res.token, { id: res.userId, email: res.email, fullName: res.fullName });
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
