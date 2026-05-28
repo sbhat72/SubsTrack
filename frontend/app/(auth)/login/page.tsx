@@ -82,7 +82,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await login({ email, password });
-      authLogin(res.token, res.user);
+      authLogin(res.token, { id: res.userId, email: res.email, fullName: res.fullName });
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');

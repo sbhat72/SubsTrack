@@ -48,11 +48,9 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: number;
-    email: string;
-    fullName: string;
-  };
+  userId: number;
+  email: string;
+  fullName: string;
 }
 
 export interface Subscription {
