@@ -182,3 +182,7 @@ export async function getUnreadCount(): Promise<{ count: number }> {
 export async function markNotificationRead(id: number): Promise<Notification> {
   return request<Notification>(`/api/notifications/${id}/read`, { method: 'PUT' });
 }
+
+export async function getLinkToken(): Promise<{ linkToken: string }> {
+  return request<{ linkToken: string }>('/api/plaid/link-token', { method: 'POST' });
+}
