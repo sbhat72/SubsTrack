@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { StatCard } from '@/components/ui/StatCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { ConnectBankButton } from '@/components/plaid/ConnectBankButton';
 import {
   getSubscriptions,
   getCancellationDeadlines,
@@ -102,6 +103,19 @@ function IconBellSmall() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
+function IconBankLarge() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="3" y1="22" x2="21" y2="22" />
+      <line x1="6" y1="18" x2="6" y2="11" />
+      <line x1="10" y1="18" x2="10" y2="11" />
+      <line x1="14" y1="18" x2="14" y2="11" />
+      <line x1="18" y1="18" x2="18" y2="11" />
+      <polygon points="12 2 2 7 22 7 12 2" />
     </svg>
   );
 }
@@ -380,6 +394,22 @@ export default function DashboardPage() {
           )}
         </section>
       </div>
+
+      {/* Bank Connection */}
+      <section className="bg-card border border-border rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+            <IconBankLarge />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-semibold text-foreground">Bank Connection</h2>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">
+              Connect your bank to automatically detect subscriptions and track spending in real time.
+            </p>
+            <ConnectBankButton />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
