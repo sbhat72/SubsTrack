@@ -11,6 +11,7 @@ import {
   type Subscription,
   type SubscriptionRequest,
 } from '@/lib/api';
+import { ConnectBankButton } from '@/components/plaid/ConnectBankButton';
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 
@@ -414,13 +415,16 @@ export default function SubscriptionsPage() {
             {monthlySpend.toFixed(2)} / month
           </p>
         </div>
-        <button
-          onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:bg-amber-400 active:scale-[0.97] transition-all shadow-sm"
-        >
-          <IconPlus />
-          Add Subscription
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ConnectBankButton variant="secondary" />
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:bg-amber-400 active:scale-[0.97] transition-all shadow-sm"
+          >
+            <IconPlus />
+            Add Subscription
+          </button>
+        </div>
       </div>
 
       {/* List */}
