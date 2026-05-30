@@ -117,6 +117,7 @@ export default function ForecastPage() {
   useEffect(() => {
     getForecast()
       .then(setForecast)
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

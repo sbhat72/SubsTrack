@@ -3,6 +3,8 @@ package com.substrack.service;
 import org.springframework.stereotype.Service;
 
 import com.plaid.client.request.PlaidApi;
+import com.substrack.dto.ExchangeTokenRequest;
+import com.substrack.dto.ExchangeTokenResponse;
 import com.substrack.dto.PlaidResponse;
 import com.substrack.model.User;
 
@@ -13,7 +15,13 @@ import com.plaid.client.model.LinkTokenCreateResponse;
 import com.plaid.client.model.LinkTokenCreateRequestUser;
 import com.plaid.client.model.Products;
 import com.plaid.client.model.CountryCode;
+import com.plaid.client.model.ItemPublicTokenCreateRequest;
+import com.plaid.client.model.ItemPublicTokenExchangeRequest;
+import com.plaid.client.model.ItemPublicTokenExchangeResponse;
+
 import retrofit2.Response;
+
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -51,5 +59,22 @@ public class PlaidService {
             throw new RuntimeException("Error occurred while creating link token");
         }
     }
+
+        public ExchangeTokenResponse exchangeToken(ExchangeTokenRequest request) throws IOException{
+            ItemPublicTokenExchangeRequest exchangeRequest = new ItemPublicTokenExchangeRequest()
+                    .publicToken(request.getPublicToken());
+
+            try {
+                Response<ItemPublicTokenExchangeResponse> response = plaidApi.itemPublicTokenExchange(exchangeRequest).execute();
+
+                return new ExchangeTokenResponse(
+                    response.body().getAccessToken(),
+                    response.body().getItemId()
+                );
+            }catch (Exception e) {
+                throw new RuntimeException("Error occurred while exchanging public token");
+            }
+                
+        }
 
 }

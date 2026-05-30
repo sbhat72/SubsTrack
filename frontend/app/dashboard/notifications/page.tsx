@@ -111,6 +111,7 @@ const FILTERS: { key: Filter; label: string }[] = [
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [markingAll, setMarkingAll] = useState(false);
   const [markingIds, setMarkingIds] = useState<Set<number>>(new Set());
@@ -118,6 +119,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     getNotifications()
       .then(setNotifications)
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -157,6 +159,18 @@ export default function NotificationsPage() {
     return (
       <div className="flex items-center justify-center min-h-96">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-card border border-border rounded-2xl">
+        <EmptyState
+          icon={<IconInbox />}
+          title="Could not load notifications"
+          description="Make sure the backend server is running and try refreshing the page."
+        />
       </div>
     );
   }

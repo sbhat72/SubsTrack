@@ -22,3 +22,9 @@ frontend/.env
 .vscode/settings.json
 .DS_Store
 Thumbs.db
+
+
+
+.m2/
+frontend/skills-lock.json
+frontend/.agents/
