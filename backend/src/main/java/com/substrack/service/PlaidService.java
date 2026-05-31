@@ -6,7 +6,9 @@ import com.plaid.client.request.PlaidApi;
 import com.substrack.dto.ExchangeTokenRequest;
 import com.substrack.dto.ExchangeTokenResponse;
 import com.substrack.dto.PlaidResponse;
+import com.substrack.model.PlaidConnection;
 import com.substrack.model.User;
+import com.substrack.repository.PlaidConnectionRepository;
 
 import io.jsonwebtoken.lang.Arrays;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class PlaidService {
     //1. Make PlaidService Object
     //2. Validate Plaid API credentials
     //3. Implement method to generate link token for authenticated user
+    private final PlaidConnectionRepository plaidConnectionRepository;
     private final PlaidApi plaidApi;
 
     public PlaidResponse generateLinkToken(User user) {
@@ -60,16 +63,24 @@ public class PlaidService {
         }
     }
 
-        public ExchangeTokenResponse exchangeToken(ExchangeTokenRequest request) throws IOException{
+        public ExchangeTokenResponse exchangeToken(ExchangeTokenRequest request, User user) throws IOException{
             ItemPublicTokenExchangeRequest exchangeRequest = new ItemPublicTokenExchangeRequest()
                     .publicToken(request.getPublicToken());
 
             try {
                 Response<ItemPublicTokenExchangeResponse> response = plaidApi.itemPublicTokenExchange(exchangeRequest).execute();
-
+                String accessToken = response.body().getAccessToken();
+                String itemId = response.body().getItemId();
+                PlaidConnection connection = PlaidConnection.builder()
+                        .user(user)
+                        .accessToken(accessToken)
+                        .itemId(itemId)
+                        .build();
+                plaidConnectionRepository.save(connection);
+                
                 return new ExchangeTokenResponse(
-                    response.body().getAccessToken(),
-                    response.body().getItemId()
+                    accessToken,
+                    itemId
                 );
             }catch (Exception e) {
                 throw new RuntimeException("Error occurred while exchanging public token");
