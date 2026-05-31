@@ -32,9 +32,9 @@ public class PlaidController {
     }
 
     @PostMapping("/exchange-token")
-    public ResponseEntity<ExchangeTokenResponse> exchangeToken(@RequestBody ExchangeTokenRequest request) {
+    public ResponseEntity<ExchangeTokenResponse> exchangeToken(@RequestBody ExchangeTokenRequest request, @AuthenticationPrincipal User user) {
         try {
-            return ResponseEntity.ok(plaidService.exchangeToken(request));
+            return ResponseEntity.ok(plaidService.exchangeToken(request, user));
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(500).build();
