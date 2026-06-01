@@ -60,7 +60,7 @@ export interface Subscription {
   description?: string;
   amount: number;
   currency: string;
-  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY';
   nextBillingDate: string;
   cancellationDate?: string;
   isActive: boolean;
@@ -72,7 +72,7 @@ export interface Subscription {
 export interface SubscriptionRequest {
   name: string;
   amount: number;
-  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY';
   nextBillingDate: string;
   currency?: string;
   cancellationDate?: string;
@@ -88,7 +88,7 @@ export interface CancellationDeadline {
   cancellationDeadline: string;
   daysUntilDeadline: number;
   isDeadlinePassed: boolean;
-  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY';
   amount: number;
 }
 
@@ -96,7 +96,7 @@ export interface ForecastLineItem {
   subscriptionId: number;
   subscriptionName: string;
   amount: number;
-  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY';
   billingDate: string;
 }
 
@@ -123,6 +123,10 @@ export interface Notification {
   message: string;
   isRead: boolean;
   createdAt: string;
+}
+
+export interface PlaidPublicTokenRequest{
+  publicToken: string;
 }
 
 // ── API Functions ──────────────────────────────────────────────────────────
@@ -185,4 +189,11 @@ export async function markNotificationRead(id: number): Promise<Notification> {
 
 export async function getLinkToken(): Promise<{ linkToken: string }> {
   return request<{ linkToken: string }>('/api/plaid/link-token', { method: 'POST' });
+}
+
+export async function exchangePublicToken(publicToken: string): Promise<{ accessToken: string }> {
+  return request<{ accessToken: string }>('/api/plaid/exchange-token', {
+    method: 'POST',
+    body: JSON.stringify({ publicToken }),
+  });
 }

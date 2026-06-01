@@ -68,6 +68,7 @@ function IconCreditCard() {
 function normalizeToMonthly(amount: number, cycle: string): number {
   if (cycle === 'YEARLY') return amount / 12;
   if (cycle === 'WEEKLY') return amount * 4.33;
+  if (cycle === 'BIWEEKLY') return amount * 2.167;
   return amount;
 }
 
@@ -75,6 +76,7 @@ function formatCycleLabel(cycle: string): string {
   if (cycle === 'MONTHLY') return 'month';
   if (cycle === 'YEARLY') return 'year';
   if (cycle === 'WEEKLY') return 'week';
+  if (cycle === 'BIWEEKLY') return '2 weeks';
   return cycle.toLowerCase();
 }
 
@@ -92,7 +94,7 @@ function formatDate(dateStr: string): string {
 interface FormState {
   name: string;
   amount: string;
-  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY';
   nextBillingDate: string;
   category: string;
   description: string;
@@ -245,12 +247,13 @@ function SubscriptionModal({ editing, onClose, onSave }: ModalProps) {
                 className={inputClass}
                 value={form.billingCycle}
                 onChange={(e) =>
-                  setField('billingCycle', e.target.value as 'MONTHLY' | 'YEARLY' | 'WEEKLY')
+                  setField('billingCycle', e.target.value as 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY')
                 }
               >
                 <option value="MONTHLY">Monthly</option>
                 <option value="YEARLY">Yearly</option>
                 <option value="WEEKLY">Weekly</option>
+                <option value="BIWEEKLY">Every 2 Weeks</option>
               </select>
             </div>
           </div>

@@ -125,6 +125,7 @@ function IconBankLarge() {
 function normalizeToMonthly(amount: number, cycle: string): number {
   if (cycle === 'YEARLY') return amount / 12;
   if (cycle === 'WEEKLY') return amount * 4.33;
+  if (cycle === 'BIWEEKLY') return amount * 2.167;
   return amount;
 }
 
