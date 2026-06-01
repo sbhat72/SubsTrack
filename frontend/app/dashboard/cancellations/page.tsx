@@ -82,6 +82,7 @@ function formatCycleLabel(cycle: string): string {
   if (cycle === 'MONTHLY') return 'Monthly';
   if (cycle === 'YEARLY') return 'Yearly';
   if (cycle === 'WEEKLY') return 'Weekly';
+  if (cycle === 'BIWEEKLY') return 'Biweekly';
   return cycle;
 }
 

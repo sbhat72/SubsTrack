@@ -32,9 +32,10 @@ public class CancellationService {
      */
     public LocalDate getNextCycleDate(LocalDate billingDate, BillingCycle cycle) {
         return switch (cycle) {
-            case MONTHLY -> billingDate.plusMonths(1);
-            case YEARLY  -> billingDate.plusYears(1);
-            case WEEKLY  -> billingDate.plusWeeks(1);
+            case MONTHLY   -> billingDate.plusMonths(1);
+            case YEARLY    -> billingDate.plusYears(1);
+            case WEEKLY    -> billingDate.plusWeeks(1);
+            case BIWEEKLY  -> billingDate.plusWeeks(2);
         };
     }
 
@@ -66,11 +67,11 @@ public class CancellationService {
                 .build();
     }
 
-    // MONTHLY / WEEKLY → 1 day before billing; YEARLY → 3 days before billing
+    // MONTHLY / WEEKLY / BIWEEKLY → 1 day before billing; YEARLY → 3 days before billing
     private LocalDate rawDeadline(LocalDate billingDate, BillingCycle cycle) {
         return switch (cycle) {
-            case MONTHLY, WEEKLY -> billingDate.minusDays(1);
-            case YEARLY          -> billingDate.minusDays(3);
+            case MONTHLY, WEEKLY, BIWEEKLY -> billingDate.minusDays(1);
+            case YEARLY                    -> billingDate.minusDays(3);
         };
     }
 }

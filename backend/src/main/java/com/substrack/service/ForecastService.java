@@ -89,6 +89,7 @@ public class ForecastService {
             case MONTHLY -> date.plusMonths(1);
             case YEARLY -> date.plusYears(1);
             case WEEKLY -> date.plusWeeks(1);
+            case BIWEEKLY -> date.plusWeeks(2);
         };
     }
 }

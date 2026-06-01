@@ -73,6 +73,7 @@ function formatCycleLabel(cycle: string): string {
   if (cycle === 'MONTHLY') return 'mo';
   if (cycle === 'YEARLY') return 'yr';
   if (cycle === 'WEEKLY') return 'wk';
+  if (cycle === 'BIWEEKLY') return '2wk';
   return cycle.toLowerCase();
 }
 
@@ -83,7 +84,7 @@ interface GroupedLineItem {
   amount: number;
   count: number;
   total: number;
-  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY';
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY';
 }
 
 function groupLineItems(items: ForecastLineItem[]): GroupedLineItem[] {
