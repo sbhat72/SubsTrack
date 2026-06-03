@@ -6,7 +6,9 @@ import com.plaid.client.request.PlaidApi;
 import com.substrack.dto.ExchangeTokenRequest;
 import com.substrack.dto.ExchangeTokenResponse;
 import com.substrack.dto.PlaidResponse;
+import com.substrack.dto.TransactionsResponse;
 import com.substrack.model.PlaidConnection;
+import com.substrack.model.Subscription;
 import com.substrack.model.User;
 import com.substrack.repository.PlaidConnectionRepository;
 
@@ -16,6 +18,8 @@ import com.plaid.client.model.LinkTokenCreateRequest;
 import com.plaid.client.model.LinkTokenCreateResponse;
 import com.plaid.client.model.LinkTokenCreateRequestUser;
 import com.plaid.client.model.Products;
+import com.plaid.client.model.Transaction;
+import com.plaid.client.model.TransactionsGetRequest;
 import com.plaid.client.model.CountryCode;
 import com.plaid.client.model.ItemPublicTokenCreateRequest;
 import com.plaid.client.model.ItemPublicTokenExchangeRequest;
@@ -24,6 +28,7 @@ import com.plaid.client.model.ItemPublicTokenExchangeResponse;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -86,6 +91,30 @@ public class PlaidService {
                 throw new RuntimeException("Error occurred while exchanging public token");
             }
                 
+        }
+
+        public List<Transaction> fetchTransactions(PlaidConnection connection) throws IOException{
+            TransactionsGetRequest request = new TransactionsGetRequest()
+                    .accessToken(connection.getAccessToken())
+                    .startDate(LocalDate.now().minusMonths(12))
+                    .endDate(LocalDate.now());
+            try{
+                List<Transaction> transactions = plaidApi.transactionsGet(request).execute().body().getTransactions();
+                return transactions;
+            }catch(Exception e){
+                throw new RuntimeException("Error occurred while fetching transactions");
+            }
+        }
+
+        public List<List<Subscription>> detectSubscriptions(List<Transaction> transactions){
+            //1. Analyze the transaction data to identify recurring transactions that likely represent subscriptions
+            //2. Group transactions by name and amount to identify potential subscriptions
+            //3. Determine the billing cycle (e.g., monthly, yearly) based on the frequency of transactions
+            //4. Create a list of Subscription objects with the identified subscription details
+            //5. Return the list of detected subscriptions
+
+            
+            return null;
         }
 
 }
