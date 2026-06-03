@@ -7,6 +7,7 @@ import com.substrack.dto.ExchangeTokenRequest;
 import com.substrack.dto.ExchangeTokenResponse;
 import com.substrack.dto.PlaidResponse;
 import com.substrack.dto.TransactionsResponse;
+import com.substrack.model.BillingCycle;
 import com.substrack.model.PlaidConnection;
 import com.substrack.model.Subscription;
 import com.substrack.model.User;
@@ -28,8 +29,13 @@ import com.plaid.client.model.ItemPublicTokenExchangeResponse;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,15 +112,73 @@ public class PlaidService {
             }
         }
 
-        public List<List<Subscription>> detectSubscriptions(List<Transaction> transactions){
-            //1. Analyze the transaction data to identify recurring transactions that likely represent subscriptions
-            //2. Group transactions by name and amount to identify potential subscriptions
-            //3. Determine the billing cycle (e.g., monthly, yearly) based on the frequency of transactions
-            //4. Create a list of Subscription objects with the identified subscription details
-            //5. Return the list of detected subscriptions
+       public List<TransactionsResponse> detectSubscriptions(User user) throws IOException {
 
-            
-            return null;
+
+        List<PlaidConnection> connections = plaidConnectionRepository.findByUser_Id(user.getId());
+        if (connections.isEmpty()) {
+            throw new RuntimeException("No bank connected for this user");
         }
+        List<Transaction> transactions = fetchTransactions(connections.get(0));
+        if(transactions.isEmpty()) throw new RuntimeException("No transactions found for the user");
+        List<TransactionsResponse> detectedSubscriptions = new ArrayList<>();
+
+        Map<String, List<Transaction>> groupedTransactions = transactions.stream()
+                .collect(Collectors.groupingBy(t ->
+                    t.getMerchantName() != null ? t.getMerchantName() : t.getName()
+                ));
+
+        for (Map.Entry<String, List<Transaction>> entry : groupedTransactions.entrySet()) {
+            String merchantName = entry.getKey();
+            List<Transaction> merchantTransactions = entry.getValue();
+
+            if (merchantTransactions.size() < 2) continue;
+
+            merchantTransactions.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
+
+            BillingCycle billingCycle = null;
+
+            for (int i = 1; i < merchantTransactions.size(); i++) {
+                LocalDate previousDate = merchantTransactions.get(i - 1).getDate();
+                LocalDate currentDate = merchantTransactions.get(i).getDate();
+                int gap = (int) ChronoUnit.DAYS.between(previousDate, currentDate);
+
+                if (gap >= 27 && gap <= 33) {
+                    billingCycle = BillingCycle.MONTHLY;
+                } else if (gap >= 350 && gap <= 370) {
+                    billingCycle = BillingCycle.YEARLY;
+                } else if (gap >= 6 && gap <= 8) {
+                    billingCycle = BillingCycle.WEEKLY;
+                } else if (gap >= 13 && gap <= 15) {
+                    billingCycle = BillingCycle.BIWEEKLY;
+                }
+            }
+
+            if (billingCycle == null) continue;
+
+            LocalDate lastChargeDate = merchantTransactions
+                    .get(merchantTransactions.size() - 1).getDate();
+
+            LocalDate nextBillingDate = switch (billingCycle) {
+                case MONTHLY -> lastChargeDate.plusMonths(1);
+                case YEARLY -> lastChargeDate.plusYears(1);
+                case WEEKLY -> lastChargeDate.plusWeeks(1);
+                case BIWEEKLY -> lastChargeDate.plusDays(14);
+            };
+
+            BigDecimal amount = BigDecimal.valueOf(
+                    merchantTransactions.get(merchantTransactions.size() - 1).getAmount()
+            );
+
+            detectedSubscriptions.add(new TransactionsResponse(
+                    merchantName,
+                    amount,
+                    billingCycle,
+                    nextBillingDate
+            ));
+        }
+
+        return detectedSubscriptions;
+    }
 
 }
