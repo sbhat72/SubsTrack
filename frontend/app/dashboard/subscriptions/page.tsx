@@ -419,7 +419,10 @@ export default function SubscriptionsPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <ConnectBankButton variant="secondary" />
+          <ConnectBankButton
+            variant="secondary"
+            onSubscriptionAdded={(sub) => setSubscriptions((prev) => [...prev, sub])}
+          />
           <button
             onClick={openAdd}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:bg-amber-400 active:scale-[0.97] transition-all shadow-sm"
