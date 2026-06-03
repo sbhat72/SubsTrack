@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
-import { getLinkToken } from '@/lib/api';
+import {
+  getLinkToken,
+  exchangePublicToken,
+  getDetectedSubscriptions,
+  type DetectedSubscription,
+  type Subscription,
+} from '@/lib/api';
+import { DetectedSubscriptionsModal } from './DetectedSubscriptionsModal';
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 
@@ -31,23 +38,57 @@ function IconCheck() {
 
 interface ConnectBankButtonProps {
   variant?: 'primary' | 'secondary';
+  onSubscriptionAdded?: (sub: Subscription) => void;
 }
 
-export function ConnectBankButton({ variant = 'primary' }: ConnectBankButtonProps) {
+export function ConnectBankButton({
+  variant = 'primary',
+  onSubscriptionAdded,
+}: ConnectBankButtonProps) {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [fetchingToken, setFetchingToken] = useState(false);
   const [shouldOpen, setShouldOpen] = useState(false);
   const [connected, setConnected] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  // Detection modal state
+  const [showModal, setShowModal] = useState(false);
+  const [detectionsLoading, setDetectionsLoading] = useState(false);
+  const [detections, setDetections] = useState<DetectedSubscription[]>([]);
+  const [detectionError, setDetectionError] = useState<string | null>(null);
+
   const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess: (publicToken, metadata) => {
       console.log('[Plaid] public_token:', publicToken);
       console.log('[Plaid] metadata:', metadata);
-      setConnected(true);
+
       setShouldOpen(false);
       setLinkToken(null);
+      setConnected(true);
+      setShowModal(true);
+      setDetectionsLoading(true);
+      setDetectionError(null);
+
+      void (async () => {
+        try {
+          const res = await exchangePublicToken(publicToken);
+          console.log('[Plaid] access_token:', res.accessToken);
+        } catch (err) {
+          console.error('[Plaid] token exchange failed:', err);
+        }
+
+        try {
+          const data = await getDetectedSubscriptions();
+          setDetections(data);
+        } catch (err) {
+          setDetectionError(
+            err instanceof Error ? err.message : 'Could not scan transactions.',
+          );
+        } finally {
+          setDetectionsLoading(false);
+        }
+      })();
     },
     onExit: (err) => {
       setShouldOpen(false);
@@ -80,15 +121,6 @@ export function ConnectBankButton({ variant = 'primary' }: ConnectBankButtonProp
     }
   }, []);
 
-  if (connected) {
-    return (
-      <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium">
-        <IconCheck />
-        Bank connected successfully
-      </div>
-    );
-  }
-
   const isLoading = fetchingToken || (shouldOpen && !ready);
 
   const buttonClass =
@@ -97,14 +129,32 @@ export function ConnectBankButton({ variant = 'primary' }: ConnectBankButtonProp
       : 'flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-muted active:scale-[0.97] transition-all text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed';
 
   return (
-    <div className="flex flex-col items-start gap-1.5">
-      <button onClick={handleClick} disabled={isLoading} className={buttonClass}>
-        <IconBank />
-        {isLoading ? 'Connecting...' : 'Connect Bank Account'}
-      </button>
-      {fetchError && (
-        <p className="text-xs text-red-600 dark:text-red-400">{fetchError}</p>
+    <>
+      {showModal && (
+        <DetectedSubscriptionsModal
+          loading={detectionsLoading}
+          detections={detections}
+          error={detectionError}
+          onClose={() => setShowModal(false)}
+          onSubscriptionAdded={onSubscriptionAdded}
+        />
       )}
-    </div>
+      <div className="flex flex-col items-start gap-1.5">
+        {connected ? (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium">
+            <IconCheck />
+            Bank connected
+          </div>
+        ) : (
+          <button onClick={handleClick} disabled={isLoading} className={buttonClass}>
+            <IconBank />
+            {isLoading ? 'Connecting...' : 'Connect Bank Account'}
+          </button>
+        )}
+        {fetchError && (
+          <p className="text-xs text-red-600 dark:text-red-400">{fetchError}</p>
+        )}
+      </div>
+    </>
   );
 }
