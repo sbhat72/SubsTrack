@@ -191,6 +191,17 @@ export async function getLinkToken(): Promise<{ linkToken: string }> {
   return request<{ linkToken: string }>('/api/plaid/link-token', { method: 'POST' });
 }
 
+export interface DetectedSubscription {
+  name: string;
+  amount: number;
+  billingCycle: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'BIWEEKLY';
+  nextbillingDate: string;
+}
+
+export async function getDetectedSubscriptions(): Promise<DetectedSubscription[]> {
+  return request<DetectedSubscription[]>('/api/plaid/detect-subscriptions');
+}
+
 export async function exchangePublicToken(publicToken: string): Promise<{ accessToken: string }> {
   return request<{ accessToken: string }>('/api/plaid/exchange-token', {
     method: 'POST',
