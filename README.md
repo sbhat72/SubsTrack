@@ -6,15 +6,6 @@ SubsTrack connects to your bank account via Plaid, automatically detects recurri
 
 ---
 
-## What Makes It Different
-
-Most subscription trackers are glorified spreadsheets — you enter everything manually and hope you remember to update it. SubsTrack works the other way around:
-
-1. Connect your bank account once
-2. SubsTrack scans 12 months of transaction history
-3. Recurring charges are detected automatically — Netflix, Spotify, iCloud, gym memberships, everything
-4. You confirm or dismiss each detection
-5. From that point forward, SubsTrack tracks cancellation deadlines, detects price increases, and forecasts your spending automatically
 
 ---
 
